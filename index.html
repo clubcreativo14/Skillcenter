@@ -1316,12 +1316,24 @@ function renderMemOverlay(st){
       <div id="methodDebito" style="display:none">
         <div style="background:#f0f9ff;border-radius:10px;padding:16px;border:1.5px solid #bee3f8;">
           <p style="font-weight:800;color:#0f2c4a;margin-bottom:8px">🔄 Débito Automático</p>
-          <p style="font-size:.84rem;color:#3a5a78;margin-bottom:12px">Para adherirte al débito automático, completá tus datos y te contactaremos para configurarlo:</p>
+          <p style="font-size:.84rem;color:#3a5a78;margin-bottom:12px">Suscribite directamente desde Mercado Pago y el débito se hace solo automáticamente:</p>
+          
+          <a href="https://mpago.li/2sAZjGN" target="_blank" style="display:block;background:linear-gradient(135deg,#009ee3,#007eb5);color:white;text-align:center;padding:14px;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;text-decoration:none;margin-bottom:10px;box-shadow:0 4px 14px rgba(0,158,227,0.35);">
+            💳 Plan Mensual — Mercado Pago<br>
+            <span style="font-size:.78rem;font-weight:600;opacity:.9">$10.000/mes · Se debita automático cada mes</span>
+          </a>
+
+          <a href="https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=c76d0ad71acd4e39bbb8c844d7745dca" target="_blank" style="display:block;background:linear-gradient(135deg,#00b386,#007a5c);color:white;text-align:center;padding:14px;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;text-decoration:none;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,179,134,0.35);">
+            🌟 Plan Anual — Mercado Pago<br>
+            <span style="font-size:.78rem;font-weight:600;opacity:.9">$100.000/año · ¡2 meses gratis! · Se debita automático</span>
+          </a>
+
+          <p style="font-size:.78rem;color:#5a8aaa;margin-bottom:12px;text-align:center">¿No podés pagar con Mercado Pago? Completá tus datos y te contactamos:</p>
           <div class="fg"><label>Nombre completo</label><input type="text" id="debNombre" placeholder="Tu nombre y apellido"></div>
           <div class="fg"><label>Email</label><input type="email" id="debEmail" placeholder="tu@email.com"></div>
           <div class="fg"><label>Teléfono</label><input type="tel" id="debTel" placeholder="+54 11 1234-5678"></div>
-          <div class="fg"><label>Banco / Entidad</label><input type="text" id="debBanco" placeholder="Ej: Banco Nación, BBVA, Mercado Pago..."></div>
-          <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="solicitarDebito()">🔄 Solicitar Débito Automático</button>
+          <div class="fg"><label>Banco / Entidad</label><input type="text" id="debBanco" placeholder="Ej: Banco Nación, BBVA..."></div>
+          <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="solicitarDebito()">📩 Enviar datos por WhatsApp</button>
         </div>
       </div>
 
