@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SkillCenter – Sistema de Gestión v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 <style>
 :root {
@@ -60,6 +62,20 @@ main{max-width:1500px;margin:0 auto;padding:24px;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
 @media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr;}}
 @media(max-width:580px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+@media(max-width:768px){
+  .hdr{padding:8px 12px;}
+  .logo-wrap img{height:52px !important;}
+  .hdr-right{gap:5px;}
+  .hdr-right button{padding:4px 9px !important;font-size:0.7rem !important;}
+  .hdr-badge{display:none;}
+  .hdr-date{font-size:0.68rem;max-width:100px;line-height:1.3;}
+  .mem-badge{font-size:0.68rem !important;padding:3px 7px !important;}
+  .nav-inner{padding:0 6px;}
+  .nav-btn{padding:9px 10px;font-size:0.73rem;}
+  main{padding:10px;}
+  .card{padding:14px;}
+  .stat-n{font-size:1.5rem;}
+}
 
 /* FORM */
 .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
@@ -230,6 +246,7 @@ window.onerror = function(msg, src, line, col, err) {
 <div class="hdr-right">
       <span class="hdr-date" id="fechaHoy"></span>
       <span id="memBadge" class="mem-badge active" style="display:none"></span>
+      <span id="syncBadge" style="display:none;padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);"></span>
       <button onclick="document.getElementById('memOverlay').style.display='flex';renderMemOverlay(memStatus())" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">💳 Suscripción</button>
       <button onclick="showAdminLogin()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">🔐 Admin</button>
       <span class="hdr-badge">🧹 Sistema de Gestión v2</span>
@@ -539,15 +556,83 @@ window.onerror = function(msg, src, line, col, err) {
 </footer>
 
 <script>
+// ══════════════════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAU3YJZp-ogI0QLevMTeOpwRod2Yz47KwU",
+  authDomain: "skillcenter-ff096.firebaseapp.com",
+  databaseURL: "https://skillcenter-ff096-default-rtdb.firebaseio.com",
+  projectId: "skillcenter-ff096",
+  storageBucket: "skillcenter-ff096.firebasestorage.app",
+  messagingSenderId: "1097207990188",
+  appId: "1:1097207990188:web:e03e64d129e81699671c09"
+};
+
+let firebaseApp = null;
+let firebaseDB = null;
+let dbRef = null;
+let syncEnabled = false;
+
+function initFirebase(){
+  try{
+    firebaseApp = firebase.initializeApp(firebaseConfig);
+    firebaseDB = firebase.database();
+    dbRef = firebaseDB.ref('skillcenter');
+    syncEnabled = true;
+    console.log('Firebase conectado');
+    dbRef.on('value', (snapshot)=>{
+      const data = snapshot.val();
+      if(data){
+        ['empleados','clientes','trabajos','asistencia','liquidaciones','log','memSolicitudes','memCodigos'].forEach(k=>{
+          db[k] = data[k] ? Object.values(data[k]) : [];
+        });
+        // Cargar membresía global
+        if(data.membresia){
+          db.membresia = data.membresia;
+          localStorage.setItem('sc_membresia', JSON.stringify(data.membresia));
+        }
+        localStorage.setItem('sc_db_v2', JSON.stringify(db));
+        renderDash();
+        checkMembership();
+      }
+      showSyncBadge('✅ En línea');
+    });
+  }catch(e){
+    console.warn('Firebase no disponible:', e);
+    syncEnabled = false;
+    showSyncBadge('📴 Sin conexión');
+  }
+}
+
+function showSyncBadge(msg){
+  const b = document.getElementById('syncBadge');
+  if(b){ b.textContent=msg; b.style.display='inline-block'; }
+}
+
 // ═══════ DB ═══════
-let db = {empleados:[],clientes:[],trabajos:[],asistencia:[],liquidaciones:[],log:[]};
+let db = {empleados:[],clientes:[],trabajos:[],asistencia:[],liquidaciones:[],log:[],memSolicitudes:[],memCodigos:[]};
 let charts = {};
 
 function loadDB(){
   try{ const r=localStorage.getItem('sc_db_v2'); if(r) db=JSON.parse(r); }catch(e){}
-  ['empleados','clientes','trabajos','asistencia','liquidaciones','log'].forEach(k=>{ if(!db[k]) db[k]=[]; });
+  ['empleados','clientes','trabajos','asistencia','liquidaciones','log','memSolicitudes','memCodigos'].forEach(k=>{ if(!db[k]) db[k]=[]; });
+  // Cargar membresía guardada localmente como fallback
+  try{ const m=localStorage.getItem('sc_membresia'); if(m) db.membresia=JSON.parse(m); }catch(e){}
 }
-function saveDB(){ localStorage.setItem('sc_db_v2',JSON.stringify(db)); }
+function saveDB(){
+  localStorage.setItem('sc_db_v2', JSON.stringify(db));
+  if(syncEnabled && dbRef){
+    const payload = {};
+    ['empleados','clientes','trabajos','asistencia','liquidaciones','log','memSolicitudes','memCodigos'].forEach(k=>{
+      if(db[k] && db[k].length>0){
+        payload[k]={};
+        db[k].forEach(item=>{ const key=(item.id||item.ts||uid()).replace(/[.#$/\[\]]/g,'_'); payload[k][key]=item; });
+      } else { payload[k]=null; }
+    });
+    dbRef.set(payload).then(()=>showSyncBadge('✅ En línea')).catch(e=>{ console.warn(e); showSyncBadge('⚠️ Error sync'); });
+  }
+}
 function logEv(m){ db.log.unshift({ts:new Date().toISOString(),m}); if(db.log.length>300) db.log=db.log.slice(0,300); saveDB(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function tod(){ return new Date().toISOString().split('T')[0]; }
@@ -582,7 +667,11 @@ function showTab(n,el){
 // ═══════ HEADER DATE ═══════
 function setDate(){
   const d=new Date();
-  document.getElementById('fechaHoy').textContent=d.toLocaleDateString('es-AR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const isMobile = window.innerWidth <= 768;
+  const opts = isMobile 
+    ? {weekday:'short', day:'numeric', month:'short'}
+    : {weekday:'long', year:'numeric', month:'long', day:'numeric'};
+  document.getElementById('fechaHoy').textContent=d.toLocaleDateString('es-AR', opts);
 }
 
 // ═══════ MODAL ═══════
@@ -1194,9 +1283,30 @@ const OWNER = {
 
 // Estructura en localStorage separada (por usuario/dispositivo)
 function getMem(){
-  try{ return JSON.parse(localStorage.getItem('sc_membresia')||'{}'); }catch(e){return {};}
+  // Membresía global en Firebase (compartida para toda la empresa)
+  return db.membresia || {};
 }
-function saveMem(m){ localStorage.setItem('sc_membresia',JSON.stringify(m)); }
+function saveMem(m){
+  // Guardar en Firebase para que todos los dispositivos la vean
+  db.membresia = m;
+  localStorage.setItem('sc_membresia', JSON.stringify(m));
+  if(syncEnabled && dbRef){
+    dbRef.child('membresia').set(m).catch(e=>console.warn('Error guardando membresía:', e));
+  }
+}
+function syncMembresia(){
+  // Escuchar cambios en la membresía en tiempo real
+  if(syncEnabled && dbRef){
+    dbRef.child('membresia').on('value', (snapshot)=>{
+      const m = snapshot.val();
+      if(m){
+        db.membresia = m;
+        localStorage.setItem('sc_membresia', JSON.stringify(m));
+        checkMembership();
+      }
+    });
+  }
+}
 
 function memStatus(){
   const m = getMem();
@@ -1257,8 +1367,8 @@ function renderMemOverlay(st){
 
     <div class="mem-status-box ${st==='vencida'?'expired':''}">
       ${st==='vencida'
-        ? `<div class="mem-status-icon">🔒</div><h2>Suscripción Vencida</h2><p>Tu acceso está bloqueado. Realizá el pago y Micaela activará tu acceso manualmente.</p>`
-        : `<div class="mem-status-icon">🌟</div><h2>Activá tu Suscripción</h2><p>Para acceder al sistema de SkillCenter necesitás una suscripción activa. Realizá el pago y Micaela te dará acceso.</p>`
+        ? `<div class="mem-status-icon">🔒</div><h2>Suscripción Vencida</h2><p>El acceso está bloqueado. Contactá a Micaela para renovar la suscripción de tu empresa.</p>`
+        : `<div class="mem-status-icon">🌟</div><h2>Activá tu Suscripción</h2><p>Tu empresa necesita una suscripción activa. Un solo pago da acceso a <strong>todos los usuarios</strong> de la empresa.</p>`
       }
     </div>
 
@@ -1268,10 +1378,11 @@ function renderMemOverlay(st){
         <div class="mem-plan-price">$${OWNER.precios.mensual.toLocaleString('es-AR')}</div>
         <div class="mem-plan-desc">por mes · Renovación cada 30 días</div>
         <ul class="mem-plan-feat">
-          <li>✅ Acceso completo</li>
+          <li>✅ Acceso para toda la empresa</li>
           <li>✅ Empleados ilimitados</li>
           <li>✅ Reportes y gráficos</li>
           <li>✅ Backup de datos</li>
+          <li>✅ Sincronización en tiempo real</li>
         </ul>
       </div>
       <div class="mem-plan recommended" onclick="selectPlan('anual')" id="planAnual">
@@ -1583,6 +1694,7 @@ function cancelarSuscripcion(){
 // ═══════ INIT ═══════
 document.addEventListener('DOMContentLoaded',()=>{
   loadDB(); setDate();
+  initFirebase();
   if(!db.memSolicitudes) db.memSolicitudes=[];
   if(!db.memCodigos) db.memCodigos=[];
   const t=tod();
