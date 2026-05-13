@@ -247,25 +247,28 @@ window.onerror = function(msg, src, line, col, err) {
       <span class="hdr-date" id="fechaHoy"></span>
       <span id="memBadge" class="mem-badge active" style="display:none"></span>
       <span id="syncBadge" style="display:none;padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);"></span>
-      <button onclick="document.getElementById('memOverlay').style.display='flex';renderMemOverlay(memStatus())" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">💳 Suscripción</button>
-      <button onclick="showAdminLogin()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">🔐 Admin</button>
-      <span class="hdr-badge">🧹 Sistema de Gestión v2</span>
+      <span id="sesionBadge" style="display:none;padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.35);"></span>
+      <button id="btnSusc" onclick="document.getElementById('memOverlay').style.display='flex';renderMemOverlay(memStatus())" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">💳 Suscripción</button>
+      <button id="btnAdmin" onclick="showAdminLogin()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">🔐 Admin</button>
+      <button onclick="sesionActual||getSesion() ? cerrarSesion() : showLoginModal()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;" id="btnLogin">🔑 Ingresar</button>
+      <span class="hdr-badge">🧹 SkillCenter</span>
     </div>
   </div>
 </header>
 
 <div class="nav-wrap">
   <div class="nav-inner">
-    <button class="nav-btn on" onclick="showTab('dashboard',this)">📊 Dashboard</button>
-    <button class="nav-btn" onclick="showTab('empleados',this)">👷 Empleados</button>
-    <button class="nav-btn" onclick="showTab('clientes',this)">🏢 Clientes</button>
-    <button class="nav-btn" onclick="showTab('trabajos',this)">🗂️ Trabajos</button>
-    <button class="nav-btn" onclick="showTab('asistencia',this)">📅 Asistencia</button>
-    <button class="nav-btn" onclick="showTab('sueldos',this)">💰 Sueldos</button>
-    <button class="nav-btn" onclick="showTab('calendario',this)">🗓️ Calendario</button>
-    <button class="nav-btn" onclick="showTab('reportes',this)">📈 Reportes</button>
-    <button class="nav-btn" onclick="showTab('historial',this)">📋 Historial</button>
-    <button class="nav-btn" onclick="showTab('backup',this)">💾 Backup</button>
+    <button class="nav-btn on" data-tab="dashboard" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+    <button class="nav-btn" data-tab="empleados" onclick="showTab('empleados',this)">👷 Empleados</button>
+    <button class="nav-btn" data-tab="clientes" onclick="showTab('clientes',this)">🏢 Clientes</button>
+    <button class="nav-btn" data-tab="trabajos" onclick="showTab('trabajos',this)">🗂️ Trabajos</button>
+    <button class="nav-btn" data-tab="asistencia" onclick="showTab('asistencia',this)">📅 Asistencia</button>
+    <button class="nav-btn" data-tab="sueldos" onclick="showTab('sueldos',this)">💰 Sueldos</button>
+    <button class="nav-btn" data-tab="calendario" onclick="showTab('calendario',this)">🗓️ Calendario</button>
+    <button class="nav-btn" data-tab="reportes" onclick="showTab('reportes',this)">📈 Reportes</button>
+    <button class="nav-btn" data-tab="historial" onclick="showTab('historial',this)">📋 Historial</button>
+    <button class="nav-btn" data-tab="backup" onclick="showTab('backup',this)">💾 Backup</button>
+    <button class="nav-btn" data-tab="miturno" style="color:var(--gs);font-weight:900;" onclick="showTab('miturno',this)">📍 Mi Turno</button>
   </div>
 </div>
 
@@ -540,6 +543,66 @@ window.onerror = function(msg, src, line, col, err) {
   </div>
 </div>
 
+<!-- ════════════════════ VISTA EMPLEADO ════════════════════ -->
+<div id="tab-miturno" class="sec">
+  <div id="empLoginBox">
+    <div class="card" style="max-width:420px;margin:40px auto;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:3rem">👤</div>
+        <h2 style="font-family:'Nunito',sans-serif;color:var(--bd);font-size:1.2rem;margin-top:8px">¿Quién sos?</h2>
+        <p style="color:var(--tm);font-size:.86rem;margin-top:4px">Elegí tu nombre para ver tus trabajos del día</p>
+      </div>
+      <div class="fg">
+        <label>Seleccioná tu nombre</label>
+        <select id="empLoginSel" style="font-size:1rem;padding:12px;">
+          <option value="">-- Elegí tu nombre --</option>
+        </select>
+      </div>
+      <button class="btn btn-p" style="width:100%;margin-top:8px;padding:14px;font-size:1rem;" onclick="loginEmpleado()">✅ Ingresar</button>
+    </div>
+  </div>
+
+  <div id="empVistaBox" style="display:none;">
+    <div style="background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:var(--r);padding:20px;margin-bottom:20px;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div>
+        <p style="font-size:.8rem;opacity:.8;margin-bottom:2px">Bienvenido/a</p>
+        <h2 id="empVistaNombre" style="font-family:'Nunito',sans-serif;font-size:1.4rem;font-weight:900;"></h2>
+        <p id="empVistaFecha" style="font-size:.78rem;opacity:.75;margin-top:2px;"></p>
+      </div>
+      <button onclick="logoutEmpleado()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:6px 16px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;">🚪 Salir</button>
+    </div>
+
+    <!-- Marcar Presente -->
+    <div class="card" id="marcadorBox">
+      <div class="card-hd"><span class="ico">📍</span>Mi Asistencia de Hoy</div>
+      <div id="estadoAsistenciaHoy" style="text-align:center;padding:20px;">
+        <div style="font-size:2.5rem;margin-bottom:8px">⏳</div>
+        <p style="color:var(--tm);font-size:.9rem;margin-bottom:16px">Todavía no marcaste tu asistencia de hoy</p>
+        <button class="btn btn-g" style="padding:14px 32px;font-size:1rem;" onclick="marcarPresente()">✅ Marcar Presente</button>
+      </div>
+    </div>
+
+    <!-- Trabajos del día -->
+    <div class="card">
+      <div class="card-hd"><span class="ico">🗂️</span>Mis Trabajos de Hoy</div>
+      <div id="empTrabajosHoy"></div>
+    </div>
+
+    <!-- Próximos trabajos -->
+    <div class="card">
+      <div class="card-hd"><span class="ico">📅</span>Próximos Trabajos</div>
+      <div id="empProximos"></div>
+    </div>
+
+    <!-- Mi historial -->
+    <div class="card">
+      <div class="card-hd"><span class="ico">📋</span>Mi Historial de Asistencia</div>
+      <div class="tw"><table><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th><th>Trabajo</th></tr></thead>
+      <tbody id="empHistAsist"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <!-- MODAL -->
@@ -646,6 +709,9 @@ function bdg(e){
 }
 
 // ═══════ TABS ═══════
+// ═══════ MI TURNO — VISTA EMPLEADO ═══════
+let empLogueado = null;
+
 function showTab(n,el){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
@@ -659,9 +725,147 @@ function showTab(n,el){
     calendario:renderCal,
     reportes:renderReportes,
     historial:()=>{fillSel('hEmp',false);renderHist();},
-    backup:renderSysLog
+    backup:renderSysLog,
+    miturno:renderMiTurno
   };
   if(fn[n]) fn[n]();
+}
+
+// ═══════ MI TURNO FUNCTIONS ═══════
+function renderMiTurno(){
+  // Poblar lista de empleados activos
+  const sel = document.getElementById('empLoginSel');
+  if(sel){
+    sel.innerHTML = '<option value="">-- Elegí tu nombre --</option>' +
+      db.empleados.filter(e=>e.estado==='Activo').map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  }
+  // Si ya hay empleado logueado mostrar su vista
+  if(empLogueado){
+    document.getElementById('empLoginBox').style.display='none';
+    document.getElementById('empVistaBox').style.display='block';
+    renderVistaEmpleado();
+  } else {
+    document.getElementById('empLoginBox').style.display='block';
+    document.getElementById('empVistaBox').style.display='none';
+  }
+}
+
+function loginEmpleado(){
+  const id = document.getElementById('empLoginSel').value;
+  if(!id){alert('Elegí tu nombre primero.');return;}
+  empLogueado = db.empleados.find(e=>e.id===id);
+  if(!empLogueado) return;
+  document.getElementById('empLoginBox').style.display='none';
+  document.getElementById('empVistaBox').style.display='block';
+  renderVistaEmpleado();
+}
+
+function logoutEmpleado(){
+  empLogueado = null;
+  document.getElementById('empLoginBox').style.display='block';
+  document.getElementById('empVistaBox').style.display='none';
+}
+
+function renderVistaEmpleado(){
+  if(!empLogueado) return;
+  const todayStr = tod();
+  document.getElementById('empVistaNombre').textContent = empLogueado.nombre;
+  document.getElementById('empVistaFecha').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+
+  // Ver si ya marcó asistencia hoy
+  const asistHoy = db.asistencia.find(a=>a.empId===empLogueado.id && a.fecha===todayStr);
+  const box = document.getElementById('estadoAsistenciaHoy');
+  if(asistHoy){
+    box.innerHTML=`
+      <div style="font-size:2.5rem;margin-bottom:8px">✅</div>
+      <p style="font-weight:800;color:var(--ok);font-size:1rem;margin-bottom:6px">¡Ya marcaste tu asistencia!</p>
+      <p style="color:var(--tm);font-size:.86rem">Entrada: <strong>${asistHoy.entrada||'–'}</strong> · Estado: ${bdg(asistHoy.estado)}</p>
+      ${asistHoy.salida?`<p style="color:var(--tm);font-size:.86rem;margin-top:4px">Salida: <strong>${asistHoy.salida}</strong></p>`:`
+      <button class="btn btn-w" style="margin-top:14px;padding:12px 28px;" onclick="marcarSalida()">🚪 Marcar Salida</button>`}`;
+  } else {
+    box.innerHTML=`
+      <div style="font-size:2.5rem;margin-bottom:8px">⏳</div>
+      <p style="color:var(--tm);font-size:.9rem;margin-bottom:16px">Todavía no marcaste tu asistencia de hoy</p>
+      <button class="btn btn-g" style="padding:14px 32px;font-size:1rem;" onclick="marcarPresente()">✅ Marcar Presente</button>`;
+  }
+
+  // Trabajos de hoy
+  const trabsHoy = db.trabajos.filter(t=>t.empId===empLogueado.id && t.fecha===todayStr);
+  const thDiv = document.getElementById('empTrabajosHoy');
+  if(!trabsHoy.length){
+    thDiv.innerHTML=`<div class="empty"><div class="ei">🗂️</div><p>No tenés trabajos asignados para hoy.</p></div>`;
+  } else {
+    thDiv.innerHTML = trabsHoy.map(t=>`
+      <div style="background:var(--g1);border-radius:10px;padding:14px;margin-bottom:10px;border-left:4px solid var(--bl);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;">
+          <div>
+            <strong style="color:var(--bd);font-size:.95rem">${t.clienteNom}</strong><br>
+            <span style="font-size:.82rem;color:var(--tm)">${t.tipo} · ${t.horaIni||'–'} → ${t.horaFin||'–'}</span>
+          </div>
+          ${bdg(t.estado)}
+        </div>
+        ${t.obs?`<p style="font-size:.8rem;color:var(--tm);margin-top:8px">${t.obs}</p>`:''}
+        ${t.materiales?`<p style="font-size:.8rem;color:var(--tm);margin-top:4px">🧴 ${t.materiales}</p>`:''}
+      </div>`).join('');
+  }
+
+  // Próximos trabajos
+  const proximos = db.trabajos.filter(t=>t.empId===empLogueado.id && t.fecha>todayStr)
+    .sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,5);
+  const prDiv = document.getElementById('empProximos');
+  if(!proximos.length){
+    prDiv.innerHTML=`<p style="color:var(--tm);font-size:.86rem">No hay próximos trabajos agendados.</p>`;
+  } else {
+    prDiv.innerHTML = proximos.map(t=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--g2);flex-wrap:wrap;gap:6px;">
+        <div>
+          <strong>${t.clienteNom}</strong> — <span style="font-size:.82rem;color:var(--tm)">${t.tipo}</span><br>
+          <span style="font-size:.8rem;color:var(--tm)">${fd(t.fecha)} · ${t.horaIni||'–'}</span>
+        </div>
+        ${bdg(t.estado)}
+      </div>`).join('');
+  }
+
+  // Historial asistencia
+  const historial = db.asistencia.filter(a=>a.empId===empLogueado.id).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,15);
+  const haTb = document.getElementById('empHistAsist');
+  if(!historial.length){
+    haTb.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="ei">📅</div><p>Sin registros.</p></div></td></tr>`;
+  } else {
+    haTb.innerHTML = historial.map(a=>`<tr>
+      <td>${fd(a.fecha)}</td><td>${a.entrada||'–'}</td><td>${a.salida||'–'}</td>
+      <td>${bdg(a.estado)}</td><td style="font-size:.8rem">${a.trabajoNom||'–'}</td>
+    </tr>`).join('');
+  }
+}
+
+function marcarPresente(){
+  if(!empLogueado) return;
+  const ahora = new Date();
+  const hora = ahora.toTimeString().slice(0,5);
+  const todayStr = tod();
+  // Buscar trabajo de hoy
+  const trab = db.trabajos.find(t=>t.empId===empLogueado.id && t.fecha===todayStr);
+  const a = {
+    id:uid(), empId:empLogueado.id, empNombre:empLogueado.nombre,
+    fecha:todayStr, entrada:hora, salida:'', estado:'Presente',
+    trabajoId:trab?.id||'', trabajoNom:trab?`${trab.clienteNom} – ${trab.tipo}`:'–',
+    obs:'Marcado desde Mi Turno', creadoEn:ahora.toISOString()
+  };
+  db.asistencia.push(a);
+  saveDB();
+  logEv(`✅ ${empLogueado.nombre} marcó presente a las ${hora}`);
+  renderVistaEmpleado();
+  alert(`✅ Presente marcado a las ${hora}`);
+}
+
+function marcarSalida(){
+  if(!empLogueado) return;
+  const ahora = new Date();
+  const hora = ahora.toTimeString().slice(0,5);
+  const todayStr = tod();
+  const asist = db.asistencia.find(a=>a.empId===empLogueado.id && a.fecha===todayStr);
+  if(asist){ asist.salida=hora; saveDB(); logEv(`🚪 ${empLogueado.nombre} marcó salida a las ${hora}`); renderVistaEmpleado(); alert(`🚪 Salida marcada a las ${hora}`); }
 }
 
 // ═══════ HEADER DATE ═══════
@@ -1277,9 +1481,163 @@ const OWNER = {
   alias: 'mic2001',
   nombre: 'Micaela A. Ávila',
   precios: { mensual: 10000, anual: 100000 },
-  graceDays: 0,           // sin días de gracia — bloqueo total
-  adminPass: 'SC@admin2025'
+  graceDays: 0,
+  superAdminPass: 'SC@admin2025',  // Micaela — ve TODO
+  adminPass: 'SC@admin2025'        // legacy
 };
+
+// ═══════ SESIÓN ACTUAL ═══════
+// niveles: null = sin sesión, 'superadmin' = Micaela, 'admin' = dueño empresa, 'empleado' = empleado
+let sesionActual = null; // { nivel, nombre, empId }
+
+function getSesion(){ 
+  try{ return JSON.parse(sessionStorage.getItem('sc_sesion')||'null'); }catch(e){ return null; } 
+}
+function setSesion(s){ 
+  sesionActual = s; 
+  sessionStorage.setItem('sc_sesion', JSON.stringify(s)); 
+  aplicarNivelAcceso();
+}
+function cerrarSesion(){ 
+  sesionActual = null; 
+  sessionStorage.removeItem('sc_sesion'); 
+  aplicarNivelAcceso(); 
+}
+
+function aplicarNivelAcceso(){
+  const s = sesionActual || getSesion();
+  const nivel = s?.nivel || null;
+  const navBtns = document.querySelectorAll('.nav-btn');
+  const adminBtn = document.getElementById('btnAdmin');
+  const suscBtn = document.getElementById('btnSusc');
+
+  // Ocultar/mostrar nav según nivel
+  navBtns.forEach(btn => {
+    const tab = btn.getAttribute('data-tab');
+    if(!tab) return;
+    if(nivel === 'superadmin'){
+      btn.style.display = ''; // ve todo
+    } else if(nivel === 'admin'){
+      // Dueño ve todo menos backup y membresía
+      btn.style.display = ['backup'].includes(tab) ? 'none' : '';
+    } else if(nivel === 'empleado'){
+      // Empleado solo ve Mi Turno
+      btn.style.display = tab === 'miturno' ? '' : 'none';
+    } else {
+      // Sin sesión — solo Mi Turno
+      btn.style.display = tab === 'miturno' ? '' : 'none';
+    }
+  });
+
+  // Botones header
+  if(adminBtn) adminBtn.style.display = (nivel==='superadmin') ? '' : 'none';
+  if(suscBtn) suscBtn.style.display = (nivel==='superadmin') ? '' : 'none';
+
+  // Actualizar badge de sesión
+  updateSesionBadge(s);
+}
+
+function updateSesionBadge(s){
+  const badge = document.getElementById('sesionBadge');
+  if(!badge) return;
+  if(!s){ badge.textContent=''; badge.style.display='none'; return; }
+  badge.style.display='inline-block';
+  if(s.nivel==='superadmin') badge.textContent='👑 Micaela';
+  else if(s.nivel==='admin') badge.textContent=`👔 ${s.nombre||'Admin'}`;
+  else badge.textContent=`👷 ${s.nombre||'Empleado'}`;
+}
+
+// Modal de ingreso principal
+function showLoginModal(){
+  openMod('🔐 Ingresar al Sistema',`
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      
+      <div style="background:linear-gradient(135deg,#0f2c4a,#1a5f8a);border-radius:12px;padding:18px;cursor:pointer;" onclick="showLoginAdmin()">
+        <div style="color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;margin-bottom:4px">👔 Ingresar como Dueño/Admin</div>
+        <div style="color:rgba(255,255,255,0.7);font-size:.82rem">Acceso completo al sistema de gestión</div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#2e7a50,#4e9e68);border-radius:12px;padding:18px;cursor:pointer;" onclick="showLoginEmpleado()">
+        <div style="color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;margin-bottom:4px">👷 Ingresar como Empleado</div>
+        <div style="color:rgba(255,255,255,0.7);font-size:.82rem">Ver mis turnos y marcar asistencia</div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <span style="font-size:.72rem;color:#aab;cursor:pointer;opacity:.5;" onclick="showSuperAdminLogin()">🔐 Super Admin</span>
+    </div>
+  `);
+}
+
+function showLoginAdmin(){
+  openMod('👔 Acceso Dueño/Admin',`
+    <p style="font-size:.86rem;color:var(--tm);margin-bottom:14px">Ingresá la contraseña de administrador de tu empresa.</p>
+    <div class="fg"><label>Contraseña</label><input type="password" id="adminPassInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')checkAdminLogin()"></div>
+    <div class="btn-row"><button class="btn btn-p" onclick="checkAdminLogin()">🔓 Ingresar</button></div>
+    <p style="font-size:.75rem;color:var(--tm);margin-top:10px;text-align:center">¿No tenés contraseña? Contactá a Micaela.</p>
+  `);
+  setTimeout(()=>document.getElementById('adminPassInput')?.focus(),100);
+}
+
+function checkAdminLogin(){
+  const pass = document.getElementById('adminPassInput')?.value;
+  // Buscar contraseña del admin de empresa en db
+  const adminPass = db.configEmpresa?.adminPass || 'empresa2025';
+  if(pass === OWNER.superAdminPass){
+    setSesion({nivel:'superadmin', nombre:'Micaela'});
+    closeMod(); showTab('dashboard', document.querySelector('[data-tab="dashboard"]'));
+    alert('👑 Bienvenida Micaela!');
+  } else if(pass === adminPass){
+    setSesion({nivel:'admin', nombre: db.configEmpresa?.nombre||'Admin'});
+    closeMod(); showTab('dashboard', document.querySelector('[data-tab="dashboard"]'));
+    alert('👔 Bienvenido/a!');
+  } else {
+    alert('❌ Contraseña incorrecta.');
+    document.getElementById('adminPassInput').value='';
+    document.getElementById('adminPassInput').focus();
+  }
+}
+
+function showLoginEmpleado(){
+  const empList = db.empleados.filter(e=>e.estado==='Activo');
+  openMod('👷 Ingresar como Empleado',`
+    <p style="font-size:.86rem;color:var(--tm);margin-bottom:14px">Elegí tu nombre para ver tus turnos.</p>
+    <div class="fg"><label>Tu nombre</label>
+      <select id="empLoginSelModal" style="font-size:1rem;padding:12px;">
+        <option value="">-- Elegí tu nombre --</option>
+        ${empList.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}
+      </select>
+    </div>
+    <div class="btn-row"><button class="btn btn-g" onclick="checkEmpLogin()">✅ Ingresar</button></div>
+  `);
+}
+
+function checkEmpLogin(){
+  const id = document.getElementById('empLoginSelModal')?.value;
+  if(!id){alert('Elegí tu nombre.');return;}
+  const emp = db.empleados.find(e=>e.id===id);
+  if(!emp) return;
+  empLogueado = emp;
+  setSesion({nivel:'empleado', nombre:emp.nombre, empId:emp.id});
+  closeMod();
+  showTab('miturno', document.querySelector('[data-tab="miturno"]'));
+}
+
+function showSuperAdminLogin(){
+  openMod('🔐 Super Admin',`
+    <div class="fg"><label>Contraseña</label><input type="password" id="superAdminInput" onkeydown="if(event.key==='Enter')checkSuperAdmin()"></div>
+    <div class="btn-row"><button class="btn btn-p" onclick="checkSuperAdmin()">🔓 Ingresar</button></div>
+  `);
+  setTimeout(()=>document.getElementById('superAdminInput')?.focus(),100);
+}
+
+function checkSuperAdmin(){
+  const pass = document.getElementById('superAdminInput')?.value;
+  if(pass===OWNER.superAdminPass){
+    setSesion({nivel:'superadmin',nombre:'Micaela'});
+    closeMod(); renderAdminPanel();
+  } else { alert('❌ Incorrecta.'); }
+}
 
 // Estructura en localStorage separada (por usuario/dispositivo)
 function getMem(){
@@ -1532,13 +1890,41 @@ function solicitarDebito(){
 function verificarCodigo(){
   const cod = document.getElementById('codigoInput').value.trim().toUpperCase();
   if(!cod){alert('Ingresá un código.');return;}
-  // Buscar en db
-  if(!db.memCodigos) db.memCodigos=[];
-  const found = db.memCodigos.find(c=>c.codigo===cod&&!c.usado);
-  if(!found){alert('❌ Código inválido o ya utilizado.');return;}
-  found.usado=true; found.usadoEn=new Date().toISOString();
-  saveDB();
-  activarSuscripcion(found.plan, `Código ${cod}`);
+
+  // Si Firebase está conectado, buscar directamente en Firebase
+  if(syncEnabled && dbRef){
+    dbRef.child('skillcenter/memCodigos').once('value', (snapshot)=>{
+      const codigos = snapshot.val();
+      let found = null;
+      let foundKey = null;
+      if(codigos){
+        Object.entries(codigos).forEach(([key, val])=>{
+          if(val.codigo===cod && !val.usado){ found=val; foundKey=key; }
+        });
+      }
+      if(!found){
+        // También buscar en db local por si acaso
+        if(!db.memCodigos) db.memCodigos=[];
+        found = db.memCodigos.find(c=>c.codigo===cod&&!c.usado);
+        if(!found){alert('❌ Código inválido o ya utilizado.');return;}
+        found.usado=true; found.usadoEn=new Date().toISOString();
+        saveDB();
+        activarSuscripcion(found.plan, `Código ${cod}`);
+        return;
+      }
+      // Marcar como usado en Firebase
+      dbRef.child('skillcenter/memCodigos/'+foundKey).update({usado:true, usadoEn:new Date().toISOString()});
+      activarSuscripcion(found.plan, `Código ${cod}`);
+    });
+  } else {
+    // Fallback localStorage
+    if(!db.memCodigos) db.memCodigos=[];
+    const found = db.memCodigos.find(c=>c.codigo===cod&&!c.usado);
+    if(!found){alert('❌ Código inválido o ya utilizado.');return;}
+    found.usado=true; found.usadoEn=new Date().toISOString();
+    saveDB();
+    activarSuscripcion(found.plan, `Código ${cod}`);
+  }
 }
 
 function activarSuscripcion(plan, metodo){
@@ -1609,6 +1995,13 @@ function renderAdminPanel(){
         </div>
       </div>`).join('') : '<p style="color:var(--tm);font-size:.86rem">Sin solicitudes.</p>'}
 
+    <h3 style="font-family:'Nunito',sans-serif;font-size:.9rem;color:#0f2c4a;margin:16px 0 10px">⚙️ Contraseña del Dueño de Empresa</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+      <input type="text" id="empPassInput" placeholder="Ej: miempresa2025" style="flex:1">
+      <button class="btn btn-p" onclick="guardarPassEmpresa()">💾 Guardar</button>
+    </div>
+    <p style="font-size:.75rem;color:var(--tm)">Contraseña actual: <strong>${db.configEmpresa?.adminPass||'empresa2025'}</strong></p>
+
     <h3 style="font-family:'Nunito',sans-serif;font-size:.9rem;color:#0f2c4a;margin:16px 0 10px">🔑 Generar Código de Activación</h3>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <select id="codPlan" style="flex:1"><option value="mensual">Plan Mensual</option><option value="anual">Plan Anual</option></select>
@@ -1654,13 +2047,31 @@ function rechazarSolicitud(id){
   if(!s) return;
   s.estado='rechazado'; saveDB(); renderAdminPanel();
 }
+function guardarPassEmpresa(){
+  const pass = document.getElementById('empPassInput')?.value.trim();
+  if(!pass){alert('Ingresá una contraseña.');return;}
+  if(!db.configEmpresa) db.configEmpresa={};
+  db.configEmpresa.adminPass = pass;
+  saveDB();
+  logEv(`Contraseña empresa actualizada`);
+  alert(`✅ Contraseña del dueño actualizada: ${pass}`);
+  renderAdminPanel();
+}
+
 function generarCodigo(){
   const plan = document.getElementById('codPlan').value;
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let cod='SC-'+new Date().getFullYear()+'-';
   for(let i=0;i<6;i++) cod+=chars[Math.floor(Math.random()*chars.length)];
+  const newCod = {id:uid(),codigo:cod,plan,generadoEn:new Date().toISOString(),usado:false};
   if(!db.memCodigos) db.memCodigos=[];
-  db.memCodigos.push({id:uid(),codigo:cod,plan,generadoEn:new Date().toISOString(),usado:false});
+  db.memCodigos.push(newCod);
+  // Guardar directamente en Firebase
+  if(syncEnabled && dbRef){
+    dbRef.child('skillcenter/memCodigos/'+newCod.id).set(newCod)
+      .then(()=>console.log('Código guardado en Firebase'))
+      .catch(e=>console.warn('Error guardando código:', e));
+  }
   saveDB();
   document.getElementById('codigoGenerado').innerHTML=`
     <div style="background:#e8f8ee;border:2px dashed #2e9e60;border-radius:10px;padding:12px;text-align:center">
@@ -1695,6 +2106,24 @@ function cancelarSuscripcion(){
 document.addEventListener('DOMContentLoaded',()=>{
   loadDB(); setDate();
   initFirebase();
+  // Restaurar sesión si existía
+  const sesionGuardada = getSesion();
+  if(sesionGuardada){
+    sesionActual = sesionGuardada;
+    if(sesionGuardada.nivel==='empleado'){
+      empLogueado = db.empleados.find(e=>e.id===sesionGuardada.empId) || null;
+    }
+  }
+  aplicarNivelAcceso();
+  // Actualizar botón login/logout
+  const btnLogin = document.getElementById('btnLogin');
+  if(btnLogin){
+    setInterval(()=>{
+      const s = sesionActual || getSesion();
+      btnLogin.textContent = s ? '🚪 Salir' : '🔑 Ingresar';
+      btnLogin.onclick = s ? cerrarSesion : showLoginModal;
+    }, 500);
+  }
   if(!db.memSolicitudes) db.memSolicitudes=[];
   if(!db.memCodigos) db.memCodigos=[];
   const t=tod();
